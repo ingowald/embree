@@ -159,6 +159,7 @@ namespace embree {
 #endif
 
     rtdqDestroy(scene);
+    return 0;
   }
 
 }
