@@ -303,6 +303,8 @@ ADD_SUBDIRECTORY(kernels)
 
 IF (EMBREE_TUTORIALS)
   ADD_SUBDIRECTORY(tutorials)
+ELSE()
+  ADD_SUBDIRECTORY(tutorials/distanceQueries)
 ENDIF()
 
 ##############################################################

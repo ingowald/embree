@@ -57,8 +57,8 @@ namespace embree {
   };
 
   /*! a single trianlge's worth of vertices, so we can isolate the
-      algorithms that operate on triangles from the actual data
-      format */
+    algorithms that operate on triangles from the actual data
+    format */
   struct Triangle {
     inline Triangle(const vec3f &A, const vec3f B, const vec3f C)
       : A(A), B(B), C(C)
@@ -202,15 +202,15 @@ namespace embree {
                                                             const index_t *idx_z,
                                                             const size_t   idx_stride,
                                                             const size_t   numTriangles)
-    : vtx_x(vtx_x),
-      vtx_y(vtx_y),
-      vtx_z(vtx_z),
-      vtx_stride(vtx_stride),
-      idx_x(idx_x),
-      idx_y(idx_y),
-      idx_z(idx_z),
-      idx_stride(idx_stride),
-      numTriangles(numTriangles)
+  : vtx_x(vtx_x),
+    vtx_y(vtx_y),
+    vtx_z(vtx_z),
+    vtx_stride(vtx_stride),
+    idx_x(idx_x),
+    idx_y(idx_y),
+    idx_z(idx_z),
+    idx_stride(idx_stride),
+    numTriangles(numTriangles)
   {
     this->device = rtcNewDevice("object_accel=bvh4.object");
     this->scene   = rtcDeviceNewScene(device,RTC_SCENE_STATIC,RTC_INTERSECT1);
@@ -354,9 +354,9 @@ namespace embree {
     BVH4 *bvh4 = (BVH4*)((Accel*)qo->scene)->intersectors.ptr;
 
     std::priority_queue<std::pair<float,BVH4::NodeRef>,
-      std::vector<std::pair<float,BVH4::NodeRef>>,
-      std::greater<std::pair<float,BVH4::NodeRef>>
-      > queue;
+                        std::vector<std::pair<float,BVH4::NodeRef>>,
+                        std::greater<std::pair<float,BVH4::NodeRef>>
+                        > queue;
     BVH4::NodeRef node = bvh4->root;
     while (1) {
       if (node.isAlignedNode()) {
@@ -388,20 +388,64 @@ namespace embree {
   }
   
   extern "C"
-  void rtdqComputeClosestPoints(distance_query_scene scene,
-                                float   *out_closest_point_pos_x,
-                                float   *out_closest_point_pos_y,
-                                float   *out_closest_point_pos_z,
-                                size_t   out_closest_point_pos_stride,
-                                float   *out_closest_point_dist,
-                                size_t   out_closest_point_dist_stride,
-                                int32_t *out_closest_point_primID,
-                                size_t   out_closest_point_primID_stride,
-                                const float *in_query_point_x,
-                                const float *in_query_point_y,
-                                const float *in_query_point_z,
-                                const size_t in_query_point_stride,
-                                const size_t numQueryPoints)
+  void rtdqComputeClosestPointsfi(distance_query_scene scene,
+                                  float   *out_closest_point_pos_x,
+                                  float   *out_closest_point_pos_y,
+                                  float   *out_closest_point_pos_z,
+                                  size_t   out_closest_point_pos_stride,
+                                  float   *out_closest_point_dist,
+                                  size_t   out_closest_point_dist_stride,
+                                  int32_t *out_closest_point_primID,
+                                  size_t   out_closest_point_primID_stride,
+                                  const float *in_query_point_x,
+                                  const float *in_query_point_y,
+                                  const float *in_query_point_z,
+                                  const size_t in_query_point_stride,
+                                  const size_t numQueryPoints)
+  {
+    QueryObject *qo = (QueryObject *)scene;
+    if (!qo)
+      return;
+    AccelData *accel = ((Accel*)qo->scene)->intersectors.ptr;
+    if (!accel)
+      return;
+    if (accel->type != AccelData::TY_BVH4)
+      return;
+
+    for (size_t i=0;i<numQueryPoints;i++) {
+      QueryResult qr;
+      
+      oneQuery(qr,qo,vec3f(in_query_point_x[i*in_query_point_stride],
+                           in_query_point_y[i*in_query_point_stride],
+                           in_query_point_z[i*in_query_point_stride]));
+      if (out_closest_point_pos_x)
+        out_closest_point_pos_x[i*out_closest_point_pos_stride] = qr.point.x;
+      if (out_closest_point_pos_y)
+        out_closest_point_pos_y[i*out_closest_point_pos_stride] = qr.point.y;
+      if (out_closest_point_pos_z)
+        out_closest_point_pos_z[i*out_closest_point_pos_stride] = qr.point.z;
+      if (out_closest_point_primID)
+        out_closest_point_primID[i*out_closest_point_primID_stride] = qr.primID;
+      if (out_closest_point_dist)
+        out_closest_point_dist[i*out_closest_point_dist_stride] = qr.distance;
+    }
+  }
+  
+  extern "C"
+  void rtdqComputeClosestPointsdi(distance_query_scene scene,
+                                  double   *out_closest_point_pos_x,
+                                  double   *out_closest_point_pos_y,
+                                  double   *out_closest_point_pos_z,
+                                  size_t   out_closest_point_pos_stride,
+                                  double   *out_closest_point_dist,
+                                  size_t   out_closest_point_dist_stride,
+                                  int32_t *out_closest_point_primID,
+                                  size_t   out_closest_point_primID_stride,
+                                  const double *in_query_point_x,
+                                  const double *in_query_point_y,
+                                  const double *in_query_point_z,
+                                  const size_t in_query_point_stride,
+                                  const size_t numQueryPoints)
   {
     QueryObject *qo = (QueryObject *)scene;
     if (!qo)

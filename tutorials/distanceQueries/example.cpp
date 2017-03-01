@@ -26,11 +26,11 @@
 #if USE_TBB
 #  include <tbb/parallel_for.h>
 
-  template<typename TASK_T>
-  inline void parallel_for(int nTasks, TASK_T&& fcn)
-  {
-    tbb::parallel_for(0, nTasks, 1, std::forward<TASK_T>(fcn));
-  }
+template<typename TASK_T>
+inline void parallel_for(int nTasks, TASK_T&& fcn)
+{
+  tbb::parallel_for(0, nTasks, 1, std::forward<TASK_T>(fcn));
+}
 #endif
 
 namespace embree {
@@ -89,20 +89,20 @@ namespace embree {
     ::parallel_for(numBlocks, [&](size_t blockID){
         size_t begin = blockID*blockSize;
         size_t end = std::min(begin+blockSize,queryPoint.size());
-        rtdqComputeClosestPoints(scene,
-                                 &result_pos[begin].x,&result_pos[begin].y,&result_pos[begin].z,3,
-                                 &result_dist[begin],1,
-                                 &result_primID[begin],1,
-                                 &queryPoint[begin].x,&queryPoint[begin].y,&queryPoint[begin].z,3,
-                                 end-begin);
+        rtdqComputeClosestPointsfi(scene,
+                                   &result_pos[begin].x,&result_pos[begin].y,&result_pos[begin].z,3,
+                                   &result_dist[begin],1,
+                                   &result_primID[begin],1,
+                                   &queryPoint[begin].x,&queryPoint[begin].y,&queryPoint[begin].z,3,
+                                   end-begin);
       });
 #else
-    rtdqComputeClosestPoints(scene,
-                             &result_pos[0].x,&result_pos[0].y,&result_pos[0].z,3,
-                             &result_dist[0],1,
-                             &result_primID[0],1,
-                             &queryPoint[0].x,&queryPoint[0].y,&queryPoint[0].z,3,
-                             numPoints);
+    rtdqComputeClosestPointsfi(scene,
+                               &result_pos[0].x,&result_pos[0].y,&result_pos[0].z,3,
+                               &result_dist[0],1,
+                               &result_primID[0],1,
+                               &queryPoint[0].x,&queryPoint[0].y,&queryPoint[0].z,3,
+                               numPoints);
 #endif
 
     auto done_all = std::chrono::system_clock::now();
