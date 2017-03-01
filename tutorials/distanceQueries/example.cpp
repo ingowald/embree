@@ -20,6 +20,18 @@
 #include <vector>
 #include <chrono>
 
+#define USE_TBB 1
+
+#if USE_TBB
+#  include <tbb/parallel_for.h>
+
+  template<typename TASK_T>
+  inline void parallel_for(int nTasks, TASK_T&& fcn)
+  {
+    tbb::parallel_for(0, nTasks, 1, std::forward<TASK_T>(fcn));
+  }
+#endif
+
 namespace embree {
 
   typedef Vec3<float> vec3f;
@@ -29,7 +41,7 @@ namespace embree {
   {
     int numTriangles = 100000;
     float maxEdgeLen = 1.f/(powf(numTriangles,1.f/3.f));
-    int numPoints    = 100000;
+    int numPoints    = 1000000;
     
     // the triangles we're querying to
     std::vector<vec3f> vertex;
@@ -67,13 +79,29 @@ namespace embree {
                               index.size());
     auto done_build = std::chrono::system_clock::now();
 
+
     // perform the queries - all together, in a single thread
+#if USE_TBB
+    int blockSize = 1000;
+    int numBlocks = (queryPoint.size()+blockSize-1)/blockSize;
+    ::parallel_for(numBlocks, [&](size_t blockID){
+        size_t begin = blockID*blockSize;
+        size_t end = std::min(begin+blockSize,queryPoint.size());
+        rtdqComputeClosestPoints(scene,
+                                 &result_pos[begin].x,&result_pos[begin].y,&result_pos[begin].z,3,
+                                 &result_dist[begin],1,
+                                 &result_primID[begin],1,
+                                 &queryPoint[begin].x,&queryPoint[begin].y,&queryPoint[begin].z,3,
+                                 end-begin);
+      });
+#else
     rtdqComputeClosestPoints(scene,
                              &result_pos[0].x,&result_pos[0].y,&result_pos[0].z,3,
                              &result_dist[0],1,
                              &result_primID[0],1,
                              &queryPoint[0].x,&queryPoint[0].y,&queryPoint[0].z,3,
                              numPoints);
+#endif
     auto done_all = std::chrono::system_clock::now();
 
     std::chrono::duration<double> buildTime = done_build - begin;
