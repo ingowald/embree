@@ -75,26 +75,16 @@ namespace embree {
     const vec3f C;
   };
 
-  inline float clamp01(const float a, float b)
-  {
-    if (embree::abs(b) < 1e-12f) b = 1e-12f;
-    float f = a / b;
-    return min(max(f,0.f),1.f);
-  }
-
-  inline vec3f projectToEdge(const vec3f P, const vec3f A, const vec3f B)
+  inline vec3f projectToEdge(const vec3f &P, const vec3f &A, const vec3f &B)
   {
     float f = dot(P-A,B-A) / dot(B-A,B-A);
     f = max(0.f,min(1.f,f));
     return A+f*(B-A);
   }
 
-  inline vec3f projectToPlane(const vec3f P, const vec3f N, const vec3f A)
+  inline vec3f projectToPlane(const vec3f &P, const vec3f &N, const vec3f &A)
   {
     return P - dot(P-A,N) * N;
-    // float f = dot(P-A,B-A) / dot(B-A,B-A);
-    // f = max(0.f,min(1.f,f));
-    // return A+f*(B-A);
   }
 
   inline void checkEdge(vec3f &closestPoint, float &closestDist,
