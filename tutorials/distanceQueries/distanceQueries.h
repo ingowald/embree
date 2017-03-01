@@ -29,16 +29,37 @@ extern "C" {
   
   typedef void *distance_query_scene;
 
-  distance_query_scene rtdqNewTriangleMeshdi(const double  *vertex_x,
-                                             const double  *vertex_y,
-                                             const double  *vertex_z,
-                                             const size_t   vertex_stride,
-                                             const int32_t *index_x,
-                                             const int32_t *index_y,
-                                             const int32_t *index_z,
-                                             const size_t   index_stride,
-                                             const size_t   numTriangles);
-  
+  /*! create a new 'general' triangle mesh that uses int32's ('i') for
+      vertex indices, and single-precision floats ('f') for the vertex
+      coordinates. Using the 'stride', and having potentially separate
+      arrays for x, y, and z coordinates should allow for all kinds of
+      data layouts, from C/C++ style arrays of structs, to
+      fortran-style 'one array per component'.The 'stride' is measured
+      in scalar types, so '1' means '4 bytes' when dealing with
+      floats, '8 bytes' when dealing with doubles, etc.
+
+      Example 1: for the case with different arrays per component:
+      
+      float vertex_x[N_VERTS];
+      float vertex_y[N_VERTS];
+      float vertex_z[N_VERTS];
+      ...
+      use
+      t = rtdqNewTriangleMeshfi(vertex_x,vertex_y,vertex_z,1, ....
+      
+      (a stride of '1' says that the next vertex's coordiante is one
+      scalar behind the previous one).
+
+      
+      Example 2: For a structure of arrays, simply have the x/y/z
+      pointer's point to the respective component of the first
+      element, and specify a stride consistent with the number of
+      scalars per struct. E.g.,
+
+      std::vector<vec3f> vertex;
+      t = rtdqNewTriangleMeshfi(&vertex[0].x,&vertex[0].y,&vertex[0].z,3, ...
+
+  */
   distance_query_scene rtdqNewTriangleMeshfi(const float   *vertex_x,
                                              const float   *vertex_y,
                                              const float   *vertex_z,
@@ -49,6 +70,26 @@ extern "C" {
                                              const size_t   index_stride,
                                              const size_t    numTriangles);
 
+  /*! create a new 'general' triangle mesh that uses int32's ('i') for
+      vertex indices, and double-precision floats ('d') for the vertex
+      coordinates. Using the 'stride', and having potentially separate
+      arrays for x, y, and z coordinates should allow for all kinds of
+      data layouts, from C/C++ style arrays of structs, to
+      fortran-style 'one array per component'. The 'stride' is
+      measured in scalar types, so '1' means '4 bytes' when dealing
+      with floats, '8 bytes' when dealing with doubles, etc.
+
+  */
+  distance_query_scene rtdqNewTriangleMeshdi(const double  *vertex_x,
+                                             const double  *vertex_y,
+                                             const double  *vertex_z,
+                                             const size_t   vertex_stride,
+                                             const int32_t *index_x,
+                                             const int32_t *index_y,
+                                             const int32_t *index_z,
+                                             const size_t   index_stride,
+                                             const size_t   numTriangles);
+  
   /*! destroy a scene created with rtdqNew...() */
   void rtdqDestroy(distance_query_scene scene);
   
