@@ -29,6 +29,12 @@
 
 namespace embree {
 
+  template<typename TASK_T>
+  inline void parallel_for(int nTasks, TASK_T&& fcn)
+  {
+    tbb::parallel_for(0, nTasks, 1, std::forward<TASK_T>(fcn));
+  }
+  
   typedef Vec3<float> vec3f;
   typedef Vec3<int>   vec3i;
 
@@ -473,6 +479,59 @@ namespace embree {
       if (out_closest_point_dist)
         out_closest_point_dist[i*out_closest_point_dist_stride] = qr.distance;
     }
+  }
+
+
+
+  extern "C"
+  void rtdqComputeClosestPointsdi_threaded(distance_query_scene scene,
+                                           double   *out_closest_point_pos_x,
+                                           double   *out_closest_point_pos_y,
+                                           double   *out_closest_point_pos_z,
+                                           size_t   out_closest_point_pos_stride,
+                                           double   *out_closest_point_dist,
+                                           size_t   out_closest_point_dist_stride,
+                                           int32_t *out_closest_point_primID,
+                                           size_t   out_closest_point_primID_stride,
+                                           const double *in_query_point_x,
+                                           const double *in_query_point_y,
+                                           const double *in_query_point_z,
+                                           const size_t in_query_point_stride,
+                                           const size_t numQueryPoints)
+  {
+    QueryObject *qo = (QueryObject *)scene;
+    if (!qo)
+      return;
+    AccelData *accel = ((Accel*)qo->scene)->intersectors.ptr;
+    if (!accel)
+      return;
+    if (accel->type != AccelData::TY_BVH4)
+      return;
+
+    int blockSize = 1000;
+    int numBlocks = (numQueryPoints+blockSize-1)/blockSize;
+    embree::parallel_for(numBlocks, [&](size_t blockID){
+        const size_t begin = blockID*blockSize;
+        const size_t end = std::min(begin+blockSize,numQueryPoints);
+
+        for (size_t i=begin;i<end;i++) {
+          QueryResult qr;
+          
+          oneQuery(qr,qo,vec3f(in_query_point_x[i*in_query_point_stride],
+                               in_query_point_y[i*in_query_point_stride],
+                               in_query_point_z[i*in_query_point_stride]));
+          if (out_closest_point_pos_x)
+            out_closest_point_pos_x[i*out_closest_point_pos_stride] = qr.point.x;
+          if (out_closest_point_pos_y)
+            out_closest_point_pos_y[i*out_closest_point_pos_stride] = qr.point.y;
+          if (out_closest_point_pos_z)
+            out_closest_point_pos_z[i*out_closest_point_pos_stride] = qr.point.z;
+          if (out_closest_point_primID)
+            out_closest_point_primID[i*out_closest_point_primID_stride] = qr.primID;
+          if (out_closest_point_dist)
+            out_closest_point_dist[i*out_closest_point_dist_stride] = qr.distance;
+        }
+      });
   }
   
   

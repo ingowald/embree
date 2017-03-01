@@ -134,6 +134,22 @@ extern "C" {
                                   const double *in_query_point_z,
                                   const size_t in_query_point_stride,
                                   const size_t numQueryPoints);
+
+  /*! same as rtdqComputeClosestPointsfi, but with double precision */
+  void rtdqComputeClosestPointsdi_threaded(distance_query_scene scene,
+                                           double   *out_closest_point_pos_x,
+                                           double   *out_closest_point_pos_y,
+                                           double   *out_closest_point_pos_z,
+                                           size_t   out_closest_point_pos_stride,
+                                           double   *out_closest_point_dist,
+                                           size_t   out_closest_point_dist_stride,
+                                           int32_t *out_closest_point_primID,
+                                           size_t   out_closest_point_primID_stride,
+                                           const double *in_query_point_x,
+                                           const double *in_query_point_y,
+                                           const double *in_query_point_z,
+                                           const size_t in_query_point_stride,
+                                           const size_t numQueryPoints);
   
 #ifdef __cplusplus
 }
