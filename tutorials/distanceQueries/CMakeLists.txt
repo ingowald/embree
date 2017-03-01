@@ -14,35 +14,21 @@
 ## limitations under the License.                                           ##
 ## ======================================================================== ##
 
-ADD_SUBDIRECTORY(common)
+INCLUDE(tutorial)
 
-ADD_SUBDIRECTORY(verify)
-ADD_SUBDIRECTORY(triangle_geometry)
-ADD_SUBDIRECTORY(dynamic_scene)
-ADD_SUBDIRECTORY(user_geometry)
-ADD_SUBDIRECTORY(viewer)
-ADD_SUBDIRECTORY(instanced_geometry)
-ADD_SUBDIRECTORY(intersection_filter)
-ADD_SUBDIRECTORY(pathtracer)
-ADD_SUBDIRECTORY(hair_geometry)
-ADD_SUBDIRECTORY(subdivision_geometry)
-ADD_SUBDIRECTORY(displacement_geometry)
-ADD_SUBDIRECTORY(bvh_builder)
-ADD_SUBDIRECTORY(lazy_geometry)
-ADD_SUBDIRECTORY(bvh_access)
-ADD_SUBDIRECTORY(motion_blur_geometry)
-ADD_SUBDIRECTORY(interpolation)
-ADD_SUBDIRECTORY(convert)
-ADD_SUBDIRECTORY(curve_geometry)
-ADD_SUBDIRECTORY(buildbench)
+ADD_LIBRARY(embree_distance_queries
+  distanceQueries.cpp
+  )
+TARGET_LINK_LIBRARIES(embree_distance_queries
+  embree
+  )
 
-ADD_SUBDIRECTORY(distanceQueries)
+ADD_EXECUTABLE(distanceQueryExample
+  example.cpp
+  )
+TARGET_LINK_LIBRARIES(distanceQueryExample
+  embree_distance_queries
+  )
 
-IF (EMBREE_RAY_PACKETS)
-ADD_SUBDIRECTORY(viewer_stream)
-ADD_SUBDIRECTORY(viewer_anim)
-ENDIF()
-
-# propagate menu links up
-SET(CPACK_NSIS_MENU_LINKS ${CPACK_NSIS_MENU_LINKS} PARENT_SCOPE)
-
+SET_PROPERTY(TARGET distanceQueryExample PROPERTY FOLDER examples/stanceQueries)
+INSTALL(TARGETS distanceQueryExample DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT examples)
