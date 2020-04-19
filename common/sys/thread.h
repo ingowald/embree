@@ -74,7 +74,8 @@ namespace embree
 
     __forceinline void clear() 
     {
-      if (ptr) destroyTls(ptr); ptr = nullptr;
+      if (ptr)
+        { destroyTls(ptr); ptr = nullptr; }
       for (size_t i=0; i<threads.size(); i++)
 	delete threads[i];
       threads.clear();

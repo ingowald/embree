@@ -256,8 +256,10 @@ namespace embree
     {
       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++)
         if (threadUsedBlocks[i].load() != nullptr) threadUsedBlocks[i].load()->shrink(device,osAllocation);
-      if (usedBlocks.load() != nullptr) usedBlocks.load()->shrink(device,osAllocation);
-      if (freeBlocks.load() != nullptr) freeBlocks.load()->clear(device,osAllocation); freeBlocks = nullptr;
+      if (usedBlocks.load() != nullptr)
+        { usedBlocks.load()->shrink(device,osAllocation); }
+      if (freeBlocks.load() != nullptr)
+        { freeBlocks.load()->clear(device,osAllocation); freeBlocks = nullptr; }
     }
 
     /*! resets the allocator, memory blocks get reused */
@@ -295,8 +297,10 @@ namespace embree
       cleanup();
       bytesUsed = 0;
       bytesWasted = 0;
-      if (usedBlocks.load() != nullptr) usedBlocks.load()->clear(device,osAllocation); usedBlocks = nullptr;
-      if (freeBlocks.load() != nullptr) freeBlocks.load()->clear(device,osAllocation); freeBlocks = nullptr;
+      if (usedBlocks.load() != nullptr)
+        { usedBlocks.load()->clear(device,osAllocation); usedBlocks = nullptr; }
+      if (freeBlocks.load() != nullptr)
+        { freeBlocks.load()->clear(device,osAllocation); freeBlocks = nullptr; }
       for (size_t i=0; i<MAX_THREAD_USED_BLOCK_SLOTS; i++) {
         threadUsedBlocks[i] = nullptr;
         threadBlocks[i] = nullptr;
@@ -485,7 +489,7 @@ namespace embree
 
       void clear (MemoryMonitorInterface* device, bool osAllocation) 
       {
-	if (next) next->clear(device,osAllocation); next = nullptr;
+	if (next) { next->clear(device,osAllocation); next = nullptr; }
         const size_t sizeof_Header = offsetof(Block,data[0]);
         const ssize_t sizeof_Alloced = sizeof_Header+getBlockAllocatedBytes();
         if (!osAllocation)

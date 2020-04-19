@@ -173,8 +173,10 @@ namespace embree
   {
     if (threadCount != N) {
       threadCount = N;
-      if (count0) delete[] count0; count0 = new unsigned char[N];
-      if (count1) delete[] count1; count1 = new unsigned char[N];
+      if (count0) delete[] count0;
+      count0 = new unsigned char[N];
+      if (count1) delete[] count1;
+      count1 = new unsigned char[N];
     }
     mode      = 0;
     flag0     = 0;
